@@ -1,0 +1,692 @@
+{
+  "name": "MSP prospect finder (Evaboot MCP)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "78be4242-24b3-4228-b44a-d70670e0ce89",
+      "name": "Every Monday at 8",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "41e12d63-e464-4c3c-938f-6571990ae42a",
+      "name": "Run now",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "22180f4e-4f0f-4175-812a-5beb425d7ff8",
+              "name": "account_search_url",
+              "type": "string",
+              "value": "https://www.linkedin.com/sales/search/company?query=(filters%3AList((type%3ACOMPANY_HEADCOUNT%2Cvalues%3AList((id%3AC%2CselectionType%3AINCLUDED)%2C(id%3AD%2CselectionType%3AINCLUDED)))%2C(type%3AREGION%2Cvalues%3AList((id%3A90000031%2CselectionType%3AINCLUDED)))%2C(type%3AINDUSTRY%2Cvalues%3AList((id%3A9%2CselectionType%3AINCLUDED)%2C(id%3A47%2CselectionType%3AINCLUDED)%2C(id%3A13%2CselectionType%3AINCLUDED)))%2C(type%3ACOMPANY_HEADCOUNT_GROWTH%2CrangeValue%3A(min%3A10))%2C(type%3ADEPARTMENT_HEADCOUNT%2CselectedSubFilter%3A13%2CrangeValue%3A(min%3A0%2Cmax%3A2))))"
+            },
+            {
+              "id": "be64f088-1530-4b3c-99d8-046e4787983a",
+              "name": "accounts_per_run",
+              "type": "number",
+              "value": 25
+            },
+            {
+              "id": "12f529c7-a642-483e-a3c8-af20ec40f436",
+              "name": "people_per_run",
+              "type": "number",
+              "value": 25
+            },
+            {
+              "id": "180d67db-4224-4b7b-9f44-4d1cfaa3b57c",
+              "name": "firms_tab_url",
+              "type": "string",
+              "value": "PASTE_THE_FIRMS_TAB_URL_WITH_GID"
+            },
+            {
+              "id": "d8111bdc-2fc6-47f7-9b36-3039a6c8a7f6",
+              "name": "people_tab_url",
+              "type": "string",
+              "value": "PASTE_THE_PEOPLE_TAB_URL_WITH_GID"
+            },
+            {
+              "id": "69964dab-8c75-49bf-ad96-3aa36b295c36",
+              "name": "profile",
+              "type": "string",
+              "value": "{\"territory\": [\"Dallas\", \"Fort Worth\", \"Plano\", \"Irving\", \"Frisco\", \"Richardson\", \"Addison\", \"Arlington\", \"McKinney\", \"Allen\", \"Carrollton\", \"Grapevine\", \"Southlake\", \"Denton\", \"Lewisville\"], \"it_staff_max\": 2, \"seats_min\": 20, \"seats_max\": 150, \"growth_min\": 10, \"growth_high\": 25, \"keep_score\": 5, \"office_words\": [\"offices in\", \"locations in\", \"new office\", \"second office\", \"clinics in\"], \"lead_area\": [\"Texas\", \"Dallas-Fort Worth\"], \"titles\": [\"Owner\", \"Managing Partner\", \"COO\", \"Chief Operating Officer\", \"Firm Administrator\", \"Practice Administrator\", \"Practice Manager\", \"Office Manager\", \"Operations Manager\", \"Director of Operations\", \"IT Manager\", \"Systems Administrator\"]}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "80b82000-b332-4ef6-8a14-5702cb3a672c",
+      "name": "Your settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('Your settings').first().json.firms_tab_url }}"
+        },
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('Your settings').first().json.firms_tab_url }}"
+        }
+      },
+      "id": "8b6c1b9f-c86b-482b-b778-309e83644209",
+      "name": "Firms already in your sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        440,
+        100
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.evaboot.com/mcp",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "export_sn_search_or_list",
+          "cachedResultName": "export_sn_search_or_list"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ search_url: $('Your settings').first().json.account_search_url, max_results: $('Your settings').first().json.accounts_per_run, name: 'MSP finder companies ' + $now.toFormat('yyyy-MM-dd') }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "3d253b80-e926-4306-8c0c-b62e146ae5a6",
+      "name": "Export the companies",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        100
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "",
+          "name": "Evaboot MCP (Bearer)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "id": "5d42dfae-290a-493b-8811-e6312bf5c1fc",
+      "name": "Wait 30 s (companies)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.evaboot.com/mcp",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "get_export",
+          "cachedResultName": "get_export"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ extraction_id: $('Export the companies').first().json.structuredContent.result.extraction_id }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "bec0dfb3-e575-4412-8c8e-baa6c8224b6d",
+      "name": "Check the companies export",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        100
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "",
+          "name": "Evaboot MCP (Bearer)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b3bd419c-f89f-4d7d-84eb-4ab96e52302b",
+              "leftValue": "={{ $json.structuredContent.result.status }}",
+              "rightValue": "EXECUTED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "419106c5-a26c-4317-93be-f28cd8b947f8",
+      "name": "Companies done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Stop instead of waiting forever when the export failed.\nconst r = $json.structuredContent.result;\nif (r.failure_reason || /FAIL|ERROR|CANCEL/i.test(r.status || '')) throw new Error(`The export stopped: ${r.status} ${r.failure_reason || ''}`);\nreturn [$input.first()];\n"
+      },
+      "id": "28bcbbd4-89c0-4da2-919f-cce1762e9cec",
+      "name": "Still running? (companies)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Same points as msp.py score: territory, IT headcount, size, growth, several sites.\nconst P = JSON.parse($('Your settings').first().json.profile);\nconst seen = new Set($('Firms already in your sheet').all().map(i => String(i.json['LinkedIn id'] || '')).filter(Boolean));\nconst num = v => { const n = parseFloat(String(v ?? '').replace(/[,%]/g, '')); return isNaN(n) ? null : n; };\nconst today = $now.toFormat('yyyy-MM-dd');\nconst out = [];\nfor (const c of $json.structuredContent.result.prospects || []) {\n  const id = String(c['Company Linkedin URL Unique ID'] || '').replace(/\\/$/, '').split('/').pop();\n  if (seen.has(id)) continue;\n  const m = /Information Technology:\\s*(\\d+)/.exec(c['Department Headcounts'] || '');\n  const it = m ? Number(m[1]) : 0;\n  const seats = num(c['Company Employee Exact Count']) || null;\n  const hq = c['Company Headquarters (Full Address)'] || c['Company Location'] || '';\n  let pts = 0, why = [], drop = '';\n  if (c['Matches Filters'] === 'no_match') drop = `does not match the search (${c['No Match Reasons']})`;\n  else if (P.territory.length && !P.territory.some(t => hq.split(',').map(x => x.trim().toLowerCase()).includes(t.toLowerCase())))\n    drop = `headquarters outside your territory (${c['Company Location'] || hq || 'unknown'})`;\n  else if (it > P.it_staff_max) drop = `${it} IT people on LinkedIn, an IT team already`;\n  else {\n    pts += it === 0 ? 3 : it === 1 ? 2 : 1;\n    why.push(it === 0 ? 'no IT person on LinkedIn' : it === 1 ? 'one IT person' : `${it} IT people`);\n    const band = c['Company Employee Range'] || '?', lh = (band.match(/\\d+/g) || []).map(Number);\n    if (seats && seats >= P.seats_min && seats <= P.seats_max) { pts += 1; why.push(`${seats} employees`); }\n    else if (seats) why.push(`${seats} employees, outside ${P.seats_min}-${P.seats_max}`);\n    // LinkedIn sometimes leaves the exact count at 0: the band overlaps your range\n    else if (lh.length === 2 && lh[0] <= P.seats_max && lh[1] >= P.seats_min) { pts += 1; why.push(`${band} employees`); }\n    else why.push(`${band} employees`);\n    const g = num(c['Company Employee Growth 1 Year (%)']);\n    if (g !== null && g >= P.growth_high) { pts += 3; why.push(`+${g}% staff in 1 year`); }\n    else if (g !== null && g >= P.growth_min) { pts += 2; why.push(`+${g}% staff in 1 year`); }\n    const text = `${c['Company Description'] || ''} ${c['Company Specialities'] || ''}`.toLowerCase();\n    const hit = P.office_words.filter(w => text.includes(w));\n    if (hit.length) { pts += 1; why.push(`several sites ('${hit[0]}')`); }\n  }\n  out.push({ json: { Date: today, Keep: !drop && pts >= P.keep_score ? 'yes' : 'no', Score: drop ? '' : pts,\n    Company: c['Company Name'] || '', Industry: c['Company Industry'] || '', City: c['Company Location'] || '',\n    'IT staff': it, Employees: seats || c['Company Employee Range'] || '',\n    'Growth 1y %': c['Company Employee Growth 1 Year (%)'] || '', Why: drop || why.join('; '),\n    Website: c['Company Website URL'] || '', 'LinkedIn id': id } });\n}\nif (!out.length) throw new Error('No new company in this run: every company is already in your sheet.');\nreturn out.sort((a, b) => (a.json.Keep !== 'yes') - (b.json.Keep !== 'yes') || (b.json.Score === '' ? -99 : b.json.Score) - (a.json.Score === '' ? -99 : a.json.Score));\n"
+      },
+      "id": "8e51806c-f457-478d-81c4-d3a5cd3798bf",
+      "name": "Score the IT gap",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('Your settings').first().json.firms_tab_url }}"
+        },
+        "options": {},
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('Your settings').first().json.firms_tab_url }}"
+        }
+      },
+      "id": "04400967-a373-438b-ad65-23f6d1f3bf38",
+      "name": "Add to Firms",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        440,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Same as msp.py people-url: the IT buyers (titles) of the kept firms.\nconst P = JSON.parse($('Your settings').first().json.profile);\nconst ids = $('Score the IT gap').all().filter(i => i.json.Keep === 'yes').map(i => i.json['LinkedIn id']);\nif (!ids.length) throw new Error('No firm kept this week: loosen the profile or raise accounts_per_run.');\n// Encode like Python's quote(safe=''): a raw parenthesis would break the Sales Navigator query.\nconst enc1 = s => encodeURIComponent(s).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());\nconst enc = s => enc1(enc1(s));\nconst comp = ids.map(i => `(id%3A${enc('urn:li:organization:' + i)}%2CselectionType%3AINCLUDED)`).join('%2C');\nconst titles = P.titles.map(t => `(text%3A${enc(t)}%2CselectionType%3AINCLUDED)`).join('%2C');\nconst url = 'https://www.linkedin.com/sales/search/people?query=(filters%3AList('\n  + `(type%3ACURRENT_COMPANY%2Cvalues%3AList(${comp}))%2C(type%3ACURRENT_TITLE%2Cvalues%3AList(${titles}))))`;\nreturn [{ json: { url, firms: ids.length } }];\n"
+      },
+      "id": "5014c55b-f396-45fd-827e-3bfe1806c320",
+      "name": "IT buyers search",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        600
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.evaboot.com/mcp",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "export_sn_search_or_list",
+          "cachedResultName": "export_sn_search_or_list"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ search_url: $json.url, max_results: $('Your settings').first().json.people_per_run, name: 'MSP finder IT buyers ' + $now.toFormat('yyyy-MM-dd') }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "fe774593-cbf2-4488-83dc-2010b2b7bedb",
+      "name": "Export the IT buyers",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        600
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "",
+          "name": "Evaboot MCP (Bearer)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "id": "3be89a83-9311-4671-ac0b-bc690c7672a3",
+      "name": "Wait 30 s (buyers)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.evaboot.com/mcp",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "get_export",
+          "cachedResultName": "get_export"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ extraction_id: $('Export the IT buyers').first().json.structuredContent.result.extraction_id }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "e69d4e62-765c-4eba-a971-e9cbeaef61a7",
+      "name": "Check the buyers export",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        600
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "",
+          "name": "Evaboot MCP (Bearer)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "697d50be-d5c9-4e7d-8405-ec2b83b25e82",
+              "leftValue": "={{ $json.structuredContent.result.status }}",
+              "rightValue": "EXECUTED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ee554313-ff3e-4f9e-8c3a-a954361e5012",
+      "name": "Buyers done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Stop instead of waiting forever when the export failed.\nconst r = $json.structuredContent.result;\nif (r.failure_reason || /FAIL|ERROR|CANCEL/i.test(r.status || '')) throw new Error(`The export stopped: ${r.status} ${r.failure_reason || ''}`);\nreturn [$input.first()];\n"
+      },
+      "id": "b798a17d-e7ad-4b38-a6c4-d8275bab0f57",
+      "name": "Still running? (buyers)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// One row per IT buyer; people outside the search filters or based outside lead_area are dropped.\nconst P = JSON.parse($('Your settings').first().json.profile);\nconst today = $now.toFormat('yyyy-MM-dd');\nconst rows = ($json.structuredContent.result.prospects || [])\n  .filter(p => !['no', 'no_match'].includes(String(p['Matches Filters'] || '').toLowerCase()))\n  .filter(p => !P.lead_area.length || P.lead_area.some(a => String(p['Location'] || '').toLowerCase().includes(a.toLowerCase())))\n  .map(p => ({ json: { Date: today, Name: p['Full Name'] || '', Title: String(p['Current Job'] || '').trim(),\n    Company: p['Company Name'] || '', Location: p['Location'] || '', Email: p['Email'] || '',\n    'Email status': p['Email Status'] || 'not found', LinkedIn: p['Linkedin URL Public'] || '' } }));\nif (!rows.length) throw new Error('No IT buyer found inside the filters and your area.');\nreturn rows;\n"
+      },
+      "id": "b804343c-bdef-451b-9e99-c2a79c6c794d",
+      "name": "Buyer rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('Your settings').first().json.people_tab_url }}"
+        },
+        "options": {},
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('Your settings').first().json.people_tab_url }}"
+        }
+      },
+      "id": "03a7dec2-bc2c-479f-89b3-4a5a660c3ec4",
+      "name": "Add to People",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1760,
+        600
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Export the companies": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 s (companies)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 s (companies)": {
+      "main": [
+        [
+          {
+            "node": "Check the companies export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check the companies export": {
+      "main": [
+        [
+          {
+            "node": "Companies done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Companies done?": {
+      "main": [
+        [
+          {
+            "node": "Score the IT gap",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Still running? (companies)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Still running? (companies)": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 s (companies)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export the IT buyers": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 s (buyers)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 s (buyers)": {
+      "main": [
+        [
+          {
+            "node": "Check the buyers export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check the buyers export": {
+      "main": [
+        [
+          {
+            "node": "Buyers done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buyers done?": {
+      "main": [
+        [
+          {
+            "node": "Buyer rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Still running? (buyers)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Still running? (buyers)": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 s (buyers)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Monday at 8": {
+      "main": [
+        [
+          {
+            "node": "Your settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run now": {
+      "main": [
+        [
+          {
+            "node": "Your settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Your settings": {
+      "main": [
+        [
+          {
+            "node": "Firms already in your sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firms already in your sheet": {
+      "main": [
+        [
+          {
+            "node": "Export the companies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score the IT gap": {
+      "main": [
+        [
+          {
+            "node": "Add to Firms",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IT buyers search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IT buyers search": {
+      "main": [
+        [
+          {
+            "node": "Export the IT buyers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buyer rows": {
+      "main": [
+        [
+          {
+            "node": "Add to People",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

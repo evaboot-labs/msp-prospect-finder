@@ -1,0 +1,24 @@
+{
+  "name": "msp-prospect-finder",
+  "version": "1.0.0",
+  "description": "An AI agent finds SMBs that need a managed service provider through Evaboot: a Sales Navigator account search in your territory for firms with almost no IT staff, an IT gap score per firm, then the owners and operations leads who buy IT, with verified emails.",
+  "author": {
+    "name": "Evaboot",
+    "url": "https://evaboot.com"
+  },
+  "homepage": "https://github.com/evaboot-labs/msp-prospect-finder",
+  "repository": "https://github.com/evaboot-labs/msp-prospect-finder",
+  "license": "MIT",
+  "privacyPolicyUrl": "https://evaboot.com/privacy-policy",
+  "keywords": [
+    "msp",
+    "managed-services",
+    "prospecting",
+    "sales-navigator",
+    "lead-generation",
+    "evaboot",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}
