@@ -1,0 +1,17 @@
+{
+  "name": "evaboot-labs-msp-prospect-finder",
+  "owner": {
+    "name": "Evaboot",
+    "url": "https://evaboot.com"
+  },
+  "metadata": {
+    "description": "Evaboot's MSP prospect finder skill for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "msp-prospect-finder",
+      "source": "./",
+      "description": "An AI agent finds SMBs that need a managed service provider through Evaboot: a Sales Navigator account search in your territory for firms with almost no IT staff, an IT gap score per firm, then the owners and operations leads who buy IT, with verified emails."
+    }
+  ]
+}
